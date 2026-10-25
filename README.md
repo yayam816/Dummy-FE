@@ -88,7 +88,8 @@ Router memakai hash URL. Rute yang ada:
 | `#/inventaris` | Katalog | login |
 | `#/inventaris/:id` | Detail barang | login |
 | `#/inventaris/:id/ajukan` | Form pengajuan | login |
-| `#/dashboard` | Dashboard (placeholder) | login |
+| `#/dashboard-peminjam` | Dashboard Peminjam | Peminjam |
+| `#/dashboard-pj` | Dashboard PJ (placeholder) | PJ |
 | `#/kelola/inventaris` | Kelola inventaris | PJ |
 | `#/kelola/inventaris/tambah` dan `.../:id/ubah` | Form barang | PJ |
 | `#/kelola/kategori` | Kelola kategori | PJ |
