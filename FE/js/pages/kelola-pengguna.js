@@ -25,6 +25,7 @@ let clickHandler = null;
 let inputHandler = null;
 let submitHandler = null;
 let changeHandler = null;
+let toastTimer = null;
 
 function nameOf(user) { return user?.nama || 'Pengguna'; }
 function initials(name) { return String(name).trim().split(/\s+/).slice(0, 2).map((part) => part[0] || '').join('').toUpperCase() || 'P'; }
@@ -92,11 +93,11 @@ function renderRows() {
     const roleClass = user.role === ROLES.PENANGGUNG_JAWAB ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-700';
     return `<tr class="border-b border-slate-100 last:border-0 hover:bg-slate-50/50">
       <td class="whitespace-nowrap px-4 py-3.5 text-center text-xs text-slate-500">${start + index + 1}</td>
-      <td class="min-w-[190px] px-4 py-3"><div class="flex items-center gap-2.5"><span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-blue-500 text-xs font-semibold text-white">${escapeHtml(initials(nameOf(user)))}</span><div class="min-w-0"><div class="truncate text-sm font-medium text-slate-800">${escapeHtml(nameOf(user))}</div><div class="mt-0.5 flex items-center gap-1.5 text-xs text-slate-500">${renderOrgLogo(user)}<span class="truncate">${escapeHtml(organizationOf(user))}</span></div></div></div></td>
-      <td class="whitespace-nowrap px-4 py-3.5 text-sm text-slate-600">${escapeHtml(user.nim || '—')}</td>
+      <td class="min-w-[190px] px-4 py-3"><div class="flex items-center gap-2.5"><span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-blue-500 text-xs font-semibold text-white">${escapeHtml(initials(nameOf(user)))}</span><div class="min-w-0"><div class="truncate text-xs font-medium text-slate-500">${escapeHtml(nameOf(user))}</div><div class="mt-0.5 flex items-center gap-1.5 text-xs text-slate-500">${renderOrgLogo(user)}<span class="truncate">${escapeHtml(organizationOf(user))}</span></div></div></div></td>
+      <td class="whitespace-nowrap px-4 py-3.5 text-center text-xs text-slate-400">${escapeHtml(user.nim || '—')}</td>
       <td class="px-4 py-3.5 text-center"><button type="button" data-action="toggle" data-id="${escapeHtml(user.id)}" aria-label="${active ? 'Nonaktifkan' : 'Aktifkan'} akun ${escapeHtml(nameOf(user))}" aria-pressed="${active}" class="relative inline-flex h-5 w-9 items-center rounded-full transition ${active ? 'bg-primary' : 'bg-slate-200'}"><span class="inline-block h-3.5 w-3.5 rounded-full bg-white shadow-sm transition ${active ? 'translate-x-[18px]' : 'translate-x-[2px]'}"></span></button></td>
-      <td class="px-4 py-3.5"><span class="inline-flex whitespace-nowrap rounded-lg px-2.5 py-1 text-xs font-medium ${roleClass}">${escapeHtml(roleLabel(user.role))}</span></td>
-      <td class="whitespace-nowrap px-4 py-3.5"><div class="flex items-center justify-center gap-1.5"><button type="button" data-action="edit" data-id="${escapeHtml(user.id)}" title="Edit pengguna" aria-label="Edit pengguna" class="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700">${renderIcon('Pencil', 'h-4 w-4')}</button><button type="button" data-action="detail" data-id="${escapeHtml(user.id)}" title="Detail pengguna" aria-label="Detail pengguna" class="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700">${renderIcon('Info', 'h-4 w-4')}</button></div></td>
+      <td class="px-4 py-3.5 text-center"><span class="inline-flex whitespace-nowrap rounded-lg px-2.5 py-1 text-xs font-medium ${roleClass}">${escapeHtml(roleLabel(user.role))}</span></td>
+      <td class="whitespace-nowrap px-4 py-3.5"><div class="flex items-center justify-center gap-0"><button type="button" data-action="edit" data-id="${escapeHtml(user.id)}" title="Edit pengguna" aria-label="Edit pengguna" class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-700">${renderIcon('Pencil', 'h-4 w-4')}</button><button type="button" data-action="detail" data-id="${escapeHtml(user.id)}" title="Detail pengguna" aria-label="Detail pengguna" class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-700">${renderIcon('Info', 'h-4 w-4')}</button></div></td>
     </tr>`;
   }).join('');
 }
@@ -130,25 +131,25 @@ function renderModal() {
   const u = selectedUser;
   if (modalMode === 'detail') {
     const roleClass = normalizeRole(u.role) === ROLES.PENANGGUNG_JAWAB ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-700';
-    return `<div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/30 backdrop-blur-[2px] p-4 sm:p-6" data-modal-backdrop><section role="dialog" aria-modal="true" class="w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-3xl bg-white p-6 sm:p-8 shadow-2xl transition-all"><h2 class="text-xl font-semibold tracking-tight text-slate-900">Detail Pengguna</h2><div class="mt-6 space-y-4"><div><span class="mb-2 block text-sm font-medium text-slate-900">Nama Peminjam</span><div class="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-100 bg-white px-4 py-3.5 shadow-[0_1px_3px_rgba(0,0,0,0.03)]"><span class="text-sm font-medium text-slate-800 break-words">${escapeHtml(nameOf(u))}</span><div class="flex shrink-0 items-center gap-1.5 text-xs font-semibold text-slate-600">${renderOrgLogo(u)}<span>${escapeHtml(organizationOf(u))}</span></div></div></div><div><span class="mb-2 block text-sm font-medium text-slate-900">NIM</span><div class="rounded-2xl border border-slate-100 bg-white px-4 py-3.5 text-sm font-medium text-slate-800 shadow-[0_1px_3px_rgba(0,0,0,0.03)] break-all">${escapeHtml(u.nim || '—')}</div></div><div><span class="mb-2 block text-sm font-medium text-slate-900">Role</span><div><span class="inline-flex rounded-xl px-4 py-1.5 text-xs font-medium ${roleClass}">${escapeHtml(roleLabel(u.role))}</span></div></div></div><div class="mt-8 flex justify-end"><button type="button" data-action="close-modal" class="rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary/90">Tutup</button></div></section></div>`;
+    return `<div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/30 backdrop-blur-[2px] p-4 sm:p-6" data-modal-backdrop><section role="dialog" aria-modal="true" class="w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-3xl bg-white p-6 sm:p-8 shadow-2xl transition-all"><h2 class="text-xl font-semibold tracking-tight text-slate-900">Detail Pengguna</h2><div class="mt-6 space-y-4"><div><span class="mb-2 block text-sm font-medium text-slate-900">Nama Peminjam</span><div class="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-100 bg-white px-4 py-3.5 shadow-[0_1px_3px_rgba(0,0,0,0.03)]"><span class="text-sm font-medium text-slate-800 break-words">${escapeHtml(nameOf(u))}</span><div class="flex shrink-0 items-center gap-1.5 text-xs font-semibold text-slate-600">${renderOrgLogo(u)}<span>${escapeHtml(organizationOf(u))}</span></div></div></div><div><span class="mb-2 block text-sm font-medium text-slate-900">NIM</span><div class="rounded-2xl border border-slate-100 bg-white px-4 py-3.5 text-sm font-medium text-slate-800 shadow-[0_1px_3px_rgba(0,0,0,0.03)] break-all">${escapeHtml(u.nim || '—')}</div></div><div><div class="flex items-center justify-between gap-4"><span class="text-sm font-medium text-slate-900">Role</span><span class="inline-flex rounded-xl px-4 py-1.5 text-xs font-medium ${roleClass}">${escapeHtml(roleLabel(u.role))}</span></div></div></div><div class="mt-8 flex justify-end"><button type="button" data-action="close-modal" class="rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:brightness-110">Tutup</button></div></section></div>`;
   }
   const editing = modalMode === 'edit';
   const currentRole = editing ? normalizeRole(u?.role) : ROLES.PEMINJAM;
   const isPeminjam = currentRole === ROLES.PEMINJAM;
   const isPj = currentRole === ROLES.PENANGGUNG_JAWAB;
-  return `<div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/30 backdrop-blur-[2px] p-4 sm:p-6" data-modal-backdrop><section role="dialog" aria-modal="true" aria-labelledby="user-form-title" class="w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-3xl bg-white p-6 sm:p-8 shadow-2xl transition-all"><h2 id="user-form-title" class="text-xl font-semibold tracking-tight text-slate-900">${editing ? 'Edit Pengguna' : 'Tambah Pengguna'}</h2><form id="user-form" class="mt-6 space-y-4"><div><label class="mb-2 block text-sm font-medium text-slate-900">Nama Peminjam</label><input name="nama" type="text" value="${escapeHtml(editing ? (u.nama || '') : '')}" placeholder="Nama Peminjam" required class="w-full rounded-2xl border border-slate-100 bg-white px-4 py-3.5 text-sm font-medium text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-100 shadow-[0_1px_3px_rgba(0,0,0,0.03)]" /></div><div><label class="mb-2 block text-sm font-medium text-slate-900">NIM</label><input name="nim" type="text" value="${escapeHtml(editing ? (u.nim || '') : '')}" placeholder="NIM" required class="w-full rounded-2xl border border-slate-100 bg-white px-4 py-3.5 text-sm font-medium text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-100 shadow-[0_1px_3px_rgba(0,0,0,0.03)]" /></div><div><label class="mb-2 block text-sm font-medium text-slate-900">Organisasi</label><div class="relative"><select name="displayOrganization" class="${selectClass('appearance-none pr-10 cursor-pointer')}">${ORGANISASI_LIST.map((org) => `<option value="${escapeHtml(org)}" ${(editing ? organizationOf(u) : 'HIMANIA') === org ? 'selected' : ''}>${escapeHtml(org)}</option>`).join('')}</select><span class="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 flex items-center">${renderIcon('ChevronDown', 'h-4 w-4 stroke-[2.2]')}</span></div></div><div><span class="mb-3 block text-sm font-medium text-slate-900">Role</span><div class="space-y-3" id="role-radio-group"><label class="flex cursor-pointer items-center gap-3" data-role-label><input type="radio" name="role" value="${ROLES.PEMINJAM}" ${isPeminjam ? 'checked' : ''} class="sr-only" /><span data-role-indicator class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition ${isPeminjam ? 'border-primary bg-primary text-white' : 'border-slate-300 bg-white text-transparent'}"><svg data-role-check class="h-3 w-3 stroke-[3] ${isPeminjam ? 'block' : 'hidden'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span><span class="text-sm font-medium text-slate-800">Peminjam</span></label><label class="flex cursor-pointer items-center gap-3" data-role-label><input type="radio" name="role" value="${ROLES.PENANGGUNG_JAWAB}" ${isPj ? 'checked' : ''} class="sr-only" /><span data-role-indicator class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition ${isPj ? 'border-primary bg-primary text-white' : 'border-slate-300 bg-white text-transparent'}"><svg data-role-check class="h-3 w-3 stroke-[3] ${isPj ? 'block' : 'hidden'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span><span class="text-sm font-medium text-slate-800">Penanggung Jawab</span></label></div></div><div id="user-form-error" class="hidden rounded-xl bg-red-50 px-4 py-2 text-sm text-red-700"></div><div class="mt-8 flex items-center justify-end gap-5"><button type="button" data-action="close-modal" class="text-sm font-semibold text-slate-600 transition hover:text-slate-900">Batal</button><button type="submit" class="rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary/90">${editing ? 'Edit' : 'Tambah'}</button></div></form></section></div>`;
+  return `<div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/30 backdrop-blur-[2px] p-4 sm:p-6" data-modal-backdrop><section role="dialog" aria-modal="true" aria-labelledby="user-form-title" class="w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-3xl bg-white p-6 sm:p-8 shadow-2xl transition-all"><h2 id="user-form-title" class="text-xl font-semibold tracking-tight text-slate-900">${editing ? 'Edit Pengguna' : 'Tambah Pengguna'}</h2><form id="user-form" class="mt-6 space-y-4"><div><label class="mb-2 block text-sm font-medium text-slate-900">Nama Peminjam</label><input name="nama" type="text" value="${escapeHtml(editing ? (u.nama || '') : '')}" placeholder="Nama Peminjam" required ${editing ? 'readonly' : ''} class="w-full rounded-2xl border border-slate-100 ${editing ? 'bg-slate-50 cursor-not-allowed' : 'bg-white'} px-4 py-3.5 text-sm font-medium text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-100 shadow-[0_1px_3px_rgba(0,0,0,0.03)]" /></div><div><label class="mb-2 block text-sm font-medium text-slate-900">NIM</label><input name="nim" type="text" value="${escapeHtml(editing ? (u.nim || '') : '')}" placeholder="NIM" required ${editing ? 'readonly' : ''} class="w-full rounded-2xl border border-slate-100 ${editing ? 'bg-slate-50 cursor-not-allowed' : 'bg-white'} px-4 py-3.5 text-sm font-medium text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-slate-300 focus:ring-2 focus:ring-slate-100 shadow-[0_1px_3px_rgba(0,0,0,0.03)]" /></div><div><label class="mb-2 block text-sm font-medium text-slate-900">Organisasi</label>${editing ? `<div class="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3.5 text-sm font-medium text-slate-800">${escapeHtml(organizationOf(u))}</div><input type="hidden" name="displayOrganization" value="${escapeHtml(organizationOf(u))}" />` : `<div class="relative"><select name="displayOrganization" class="${selectClass('appearance-none pr-10 cursor-pointer')}">${ORGANISASI_LIST.map((org) => `<option value="${escapeHtml(org)}" ${'HIMANIA' === org ? 'selected' : ''}>${escapeHtml(org)}</option>`).join('')}</select><span class="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 flex items-center">${renderIcon('ChevronDown', 'h-4 w-4 stroke-[2.2]')}</span></div>`}</div><div><span class="mb-3 block text-sm font-medium text-slate-900">Role</span><div class="space-y-3" id="role-radio-group"><label class="flex cursor-pointer items-center gap-3" data-role-label><input type="radio" name="role" value="${ROLES.PEMINJAM}" ${isPeminjam ? 'checked' : ''} class="sr-only" /><span data-role-indicator class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition ${isPeminjam ? 'border-primary bg-primary text-white' : 'border-slate-300 bg-white text-transparent'}"><svg data-role-check class="h-3 w-3 stroke-[3] ${isPeminjam ? 'block' : 'hidden'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span><span class="text-sm font-medium text-slate-800">Peminjam</span></label><label class="flex cursor-pointer items-center gap-3" data-role-label><input type="radio" name="role" value="${ROLES.PENANGGUNG_JAWAB}" ${isPj ? 'checked' : ''} class="sr-only" /><span data-role-indicator class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition ${isPj ? 'border-primary bg-primary text-white' : 'border-slate-300 bg-white text-transparent'}"><svg data-role-check class="h-3 w-3 stroke-[3] ${isPj ? 'block' : 'hidden'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span><span class="text-sm font-medium text-slate-800">Penanggung Jawab</span></label></div></div><div id="user-form-error" class="hidden rounded-xl bg-red-50 px-4 py-2 text-sm text-red-700"></div><div class="mt-8 flex items-center justify-end gap-5"><button type="button" data-action="close-modal" class="cancel-form-button rounded-xl border border-slate-200 bg-white px-6 py-2.5 text-sm font-semibold text-slate-600 transition-colors">Batal</button><button type="submit" class="rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:brightness-110">${editing ? 'Edit' : 'Tambah'}</button></div></form></section></div>`;
 }
 function renderContent() {
   const filtered = visibleUsers();
   const nAktif = countActiveFilters();
-  return `<section class="w-full px-5 pb-8 pt-6 sm:px-6 lg:px-7">
-    <div class="mb-6">
+  return `<section class="w-full px-5 pb-8 pt-8 sm:px-6 lg:px-7">
+    <div class="mb-9">
       <h1 class="text-3xl font-semibold tracking-tight text-slate-900">Kelola Pengguna</h1>
       <p class="mt-1 text-sm text-slate-400">Pantau dan kelola akun pengguna, hak akses, dan perannya dalam sistem.</p>
     </div>
-    <div class="rounded-xl bg-white p-4 shadow-[0_1px_4px_rgba(15,23,42,0.025)] sm:p-5">
-      <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h2 class="text-base font-semibold text-slate-900">List Pengguna</h2>
+    <div class="rounded-xl bg-white p-4 shadow-[0_1px_4px_rgba(15,23,42,0.025)] sm:p-6">
+      <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h2 class="text-lg font-semibold text-slate-900">List Pengguna</h2>
         <div class="flex items-center justify-end gap-2.5">
           ${renderSearchInput({ id: 'search-users', value: searchTerm, placeholder: 'Cari nama pengguna', ariaLabel: 'Cari nama pengguna', className: 'w-full sm:w-64' })}
           ${renderFilterButton({
@@ -158,11 +159,26 @@ function renderContent() {
             ariaLabel: 'Filter pengguna',
             countActive: nAktif,
           })}
-          <button type="button" data-action="add" class="inline-flex h-11 items-center gap-2 whitespace-nowrap rounded-xl bg-primary px-4 text-xs font-semibold text-white transition hover:bg-primary/90">Tambah Pengguna</button>
         </div>
       </div>
       ${toastMessage ? `<div role="status" class="mb-3 rounded-lg px-4 py-2 text-sm ${toastType === 'error' ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}">${escapeHtml(toastMessage)}</div>` : ''}
-      <div class="w-full overflow-x-auto"><table class="w-full min-w-[680px] border-collapse text-left"><thead><tr class="border-b border-slate-100 text-xs font-semibold uppercase tracking-wider text-slate-400"><th class="px-4 py-3.5 text-center">No</th><th class="px-4 py-3.5">Nama</th><th class="px-4 py-3.5">NIM</th><th class="px-4 py-3.5 text-center">Status</th><th class="px-4 py-3.5">Role</th><th class="px-4 py-3.5 text-center">Aksi</th></tr></thead><tbody>${renderRows()}</tbody></table></div>
+        <div class="w-full overflow-x-auto">
+          <table class="w-full min-w-[680px] border-collapse text-left">
+          <thead>
+            <tr class="border-b border-slate-100 text-sm font-medium leading-[140%] tracking-normal text-slate-400">
+              <th class="px-4 py-3.5 text-center font-semibold">No</th>
+              <th class="px-4 py-3.5 font-semibold">Nama</th>
+              <th class="px-4 py-3.5 text-center font-semibold">NIM</th>
+              <th class="px-4 py-3.5 text-center font-semibold">Status</th>
+              <th class="px-4 py-3.5 text-center font-semibold">Role</th>
+              <th class="px-4 py-3.5 text-center font-semibold">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${renderRows()}
+            </tbody>
+            </table>
+        </div>
       <div class="mt-4 flex items-center justify-between gap-3"><p class="text-xs text-slate-500">Menampilkan ${filtered.length ? Math.min((currentPage - 1) * PAGE_SIZE + 1, filtered.length) : 0}–${Math.min(currentPage * PAGE_SIZE, filtered.length)} dari ${filtered.length} pengguna</p>${renderPagination()}</div>
     </div>
   </section>
@@ -213,6 +229,7 @@ export function render() { return renderContent(); }
 export async function mount(root) {
   rootElement = root;
   searchTerm = ''; roleFilter = 'all'; statusFilter = 'all'; currentPage = 1; modalMode = null; selectedUser = null; toastMessage = '';
+  if (toastTimer) { clearTimeout(toastTimer); toastTimer = null; }
   users = await getUsers();
   rootElement.innerHTML = renderContent();
   clickHandler = async (event) => {
@@ -261,7 +278,10 @@ export async function mount(root) {
       const nextStatus = isActive(user) ? STATUS_AKUN.NONAKTIF : STATUS_AKUN.AKTIF;
       try { await updateMockUser(id, { statusAkun: nextStatus }); toastMessage = `Akun ${user.nama} sekarang ${nextStatus === STATUS_AKUN.AKTIF ? 'aktif' : 'nonaktif'}.`; toastType = 'success'; users = await getUsers(); }
       catch (error) { toastMessage = error.message || 'Status akun gagal diperbarui.'; toastType = 'error'; }
-      refresh(); return;
+      if (toastTimer) clearTimeout(toastTimer);
+      refresh();
+      toastTimer = setTimeout(() => { toastMessage = ''; toastTimer = null; refresh(); }, 3000);
+      return;
     }
   };
   inputHandler = (event) => {
@@ -336,5 +356,6 @@ export function unmount() {
   if (rootElement && inputHandler) rootElement.removeEventListener('input', inputHandler);
   if (rootElement && submitHandler) rootElement.removeEventListener('submit', submitHandler);
   if (rootElement && changeHandler) rootElement.removeEventListener('change', changeHandler);
+  if (toastTimer) { clearTimeout(toastTimer); toastTimer = null; }
   rootElement = null; clickHandler = null; inputHandler = null; submitHandler = null; changeHandler = null;
 }

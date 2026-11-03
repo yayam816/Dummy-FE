@@ -67,11 +67,11 @@ export function renderKategoriSkeleton() {
       <div class="w-full overflow-x-auto">
         <table class="w-full min-w-full border-collapse text-left">
           <thead>
-            <tr class="border-b border-slate-100 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-              <th scope="col" class="px-4 py-4 w-12 text-center">No</th>
-              <th scope="col" class="px-4 py-4 min-w-[200px]">Nama Kategori</th>
-              <th scope="col" class="px-4 py-4 min-w-[140px] text-center">Total Barang Per Kategori</th>
-              <th scope="col" class="px-4 py-4 min-w-[160px] text-center">Aksi</th>
+            <tr class="border-b border-slate-100 text-sm leading-[140%] tracking-normal text-slate-400">
+              <th scope="col" class="px-4 py-4 w-12 text-center font-semibold">No</th>
+              <th scope="col" class="px-4 py-4 min-w-[200px] font-semibold">Nama Kategori</th>
+              <th scope="col" class="px-4 py-4 min-w-[140px] text-center font-semibold">Total Barang Per Kategori</th>
+              <th scope="col" class="px-4 py-4 min-w-[160px] text-center font-semibold">Aksi</th>
             </tr>
           </thead>
           <tbody>
@@ -131,7 +131,6 @@ export function renderFormModal({ dialog, editItem, inputNama = '', inputError =
         <div class="mt-4 space-y-2">
           <div class="flex items-center justify-between">
             <label for="input-kategori-nama" class="${labelClass()}">Nama Kategori</label>
-            <span class="text-xs text-muted-foreground" id="char-counter">${charCount}/${MAKS_PANJANG_KATEGORI}</span>
           </div>
           <input
             id="input-kategori-nama"
@@ -154,7 +153,7 @@ export function renderFormModal({ dialog, editItem, inputNama = '', inputError =
           <button
             type="button"
             data-action="close-form-dialog"
-            class="${buttonClass({ variant: 'outline', size: 'default' })}"
+            class="${buttonClass({ variant: 'outline', size: 'default', className: 'transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-600' })}"
             ${isSubmitting ? 'disabled' : ''}
           >
             Batal
@@ -162,7 +161,7 @@ export function renderFormModal({ dialog, editItem, inputNama = '', inputError =
           <button
             type="button"
             data-action="submit-form-dialog"
-            class="${buttonClass({ variant: 'default', size: 'default' })}"
+            class="${buttonClass({ variant: 'default', size: 'default', className: 'transition-colors hover:brightness-110' })}"
             ${isSubmitting ? 'disabled' : ''}
           >
             ${submitText}
@@ -197,7 +196,7 @@ export function renderConfirmModal({ dialog, editItem, inputNama = '', isSubmitt
       <div class="flex flex-col p-6 text-center items-center">
         <!-- Icon Send / Pesawat Kertas -->
         <div class="mb-4 inline-flex h-20 w-20 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 p-1">
-          <img src="assets/animations/modal-send.gif" alt="Send" class="h-full w-full object-contain select-none pointer-events-none drop-shadow-sm" loading="eager" />
+          <img src="assets/animations/modal-send.gif" alt="Send" class="h-full w-full object-contain select-none pointer-events-none" loading="eager" />
         </div>
 
         <h2 id="dialog-confirm-kategori-title" class="text-lg font-bold text-foreground">${title}</h2>
@@ -250,20 +249,18 @@ export function renderDeleteModal(deleteItem, isSubmitting = false) {
     >
       <div class="flex flex-col p-6 text-center items-center">
         <!-- Icon Trash Merah -->
-        <div class="mb-4 inline-flex h-20 w-20 items-center justify-center rounded-2xl bg-rose-50 text-rose-600 p-1">
+        <div class="mb-4 inline-flex h-24 w-24 items-center justify-center p-0">
           <img src="assets/animations/modal-delete.gif" alt="Hapus" class="h-full w-full object-contain select-none pointer-events-none drop-shadow-sm" loading="eager" />
         </div>
 
-        <h2 id="dialog-delete-kategori-title" class="text-lg font-bold text-foreground">Hapus kategori?</h2>
-        <p class="mt-1.5 text-sm text-muted-foreground">
-          Apakah anda yakin ingin menghapus kategori <strong>${nama}</strong>?
-        </p>
+        <h2 id="dialog-delete-kategori-title" class="text-lg font-bold text-foreground">Hapus Kategori</h2>
+        <p class="mt-1.5 text-sm text-muted-foreground">Apakah anda yakin ingin menghapus kategori?</p>
 
         <div class="mt-6 flex w-full items-center justify-center gap-3">
           <button
             type="button"
             data-action="close-delete-dialog"
-            class="${buttonClass({ variant: 'outline', size: 'default', className: 'flex-1 rounded-xl' })}"
+            class="${buttonClass({ variant: 'outline', size: 'default', className: 'flex-1 rounded-xl transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-600' })}"
             ${isSubmitting ? 'disabled' : ''}
           >
             Kembali
@@ -272,7 +269,7 @@ export function renderDeleteModal(deleteItem, isSubmitting = false) {
             type="button"
             data-action="confirm-delete-kategori"
             data-id="${idKategori}"
-            class="${buttonClass({ variant: 'destructive', size: 'default', className: 'flex-1 rounded-xl' })}"
+            class="${buttonClass({ variant: 'destructive', size: 'default', className: 'flex-1 rounded-xl button-hover-soft-red' })}"
             ${isSubmitting ? 'disabled' : ''}
           >
             ${isSubmitting ? 'Menghapus...' : 'Hapus'}
@@ -403,7 +400,7 @@ export function renderKategoriTableContent({
         <button
           type="button"
           data-action="open-tambah-dialog"
-          class="${buttonClass({ variant: 'default', size: 'sm', className: 'mt-4' })}"
+          class="${buttonClass({ variant: 'default', size: 'sm', className: 'mt-4 button-hover-soft-primary' })}"
         >
           ${renderIcon('Plus', 'h-4 w-4 mr-1.5')}
           Tambah Kategori
@@ -421,11 +418,11 @@ export function renderKategoriTableContent({
       <div class="w-full overflow-x-auto">
         <table class="w-full min-w-full border-collapse text-left">
           <thead>
-            <tr class="border-b border-slate-100 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-              <th scope="col" class="px-4 py-4 w-12 text-center">No</th>
-              <th scope="col" class="px-4 py-4 min-w-[200px]">Nama Kategori</th>
-              <th scope="col" class="px-4 py-4 min-w-[140px] text-center">Total Barang Per Kategori</th>
-              <th scope="col" class="px-4 py-4 min-w-[160px] text-center">Aksi</th>
+            <tr class="border-b border-slate-100 text-sm leading-[140%] tracking-normal text-slate-400">
+              <th scope="col" class="px-4 py-4 w-12 text-center font-semibold">No</th>
+              <th scope="col" class="px-4 py-4 min-w-[200px] font-semibold">Nama Kategori</th>
+              <th scope="col" class="px-4 py-4 min-w-[140px] text-center font-semibold">Total Barang Per Kategori</th>
+              <th scope="col" class="px-4 py-4 min-w-[160px] text-center font-semibold">Aksi</th>
             </tr>
           </thead>
           <tbody>
@@ -437,14 +434,14 @@ export function renderKategoriTableContent({
               return html`
                 <tr class="border-b border-slate-100 last:border-0 hover:bg-slate-50/60">
                   <td class="whitespace-nowrap px-4 py-4 text-center text-xs text-slate-400 align-middle">${no}</td>
-                  <td class="min-w-[200px] px-4 py-4 font-medium text-slate-800 text-xs align-middle">${kat.namaKategori}</td>
-                  <td class="whitespace-nowrap px-4 py-4 text-center align-middle">
-                    <span class="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
-                      ${totalBarang}
-                    </span>
+                  <td class="min-w-[200px] px-4 py-4 align-middle">
+                    <span class="text-xs font-medium text-slate-500">${kat.namaKategori}</span>
                   </td>
-                  <td class="whitespace-nowrap px-4 py-4 align-middle">
-                    <div class="flex items-center justify-center gap-1" role="group" aria-label="Aksi kategori ${kat.namaKategori}">
+                  <td class="whitespace-nowrap px-4 py-4 text-center tabular-nums text-xs text-slate-400 align-middle">
+                    ${totalBarang}
+                  </td>
+                  <td class="whitespace-nowrap px-1 py-4 align-middle min-w-[160px]">
+                    <div class="flex items-center justify-center gap-0" role="group" aria-label="Aksi kategori ${kat.namaKategori}">
                       <button
                         type="button"
                         data-action="open-edit-dialog"
@@ -452,39 +449,23 @@ export function renderKategoriTableContent({
                         data-nama="${kat.namaKategori}"
                         aria-label="Ubah kategori ${kat.namaKategori}"
                         title="Ubah ${kat.namaKategori}"
-                        class="inline-flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        class="inline-flex h-8 w-8 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         ${renderIcon('Pencil', 'h-4 w-4')}
                       </button>
 
-                      ${isDipakai
-                        ? html`
-                            <button
-                              type="button"
-                              disabled
-                              aria-disabled="true"
-                              aria-label="Hapus kategori ${kat.namaKategori} nonaktif karena masih digunakan"
-                              title="Kategori masih digunakan"
-                              class="inline-flex h-9 w-9 items-center justify-center rounded-xl text-slate-300 cursor-not-allowed opacity-50"
-                            >
-                              ${renderIcon('Trash2', 'h-4 w-4')}
-                            </button>
-                            <span class="text-xs text-slate-400 ml-1 whitespace-nowrap">Dipakai ${totalBarang} barang</span>
-                          `
-                        : html`
-                            <button
-                              type="button"
-                              data-action="open-delete-dialog"
-                              data-id="${kat.idKategori}"
-                              data-nama="${kat.namaKategori}"
-                              data-count="${totalBarang}"
-                              aria-label="Hapus kategori ${kat.namaKategori}"
-                              title="Hapus ${kat.namaKategori}"
-                              class="inline-flex h-9 w-9 items-center justify-center rounded-xl text-red-600 transition hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                            >
-                              ${renderIcon('Trash2', 'h-4 w-4')}
-                            </button>
-                          `}
+                      <button
+                        type="button"
+                        data-action="open-delete-dialog"
+                        data-id="${kat.idKategori}"
+                        data-nama="${kat.namaKategori}"
+                        data-count="${totalBarang}"
+                        aria-label="Hapus kategori ${kat.namaKategori}"
+                        title="Hapus ${kat.namaKategori}"
+                        class="inline-flex h-8 w-8 items-center justify-center rounded-xl text-red-600 transition hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        ${renderIcon('Trash2', 'h-4 w-4')}
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -531,7 +512,7 @@ export function renderKelolaKategoriContent(state = {}) {
   } = state;
 
   return html`
-    <div class="space-y-6" id="kelola-kategori-root">
+    <div class="w-full space-y-6 px-5 pb-8 pt-8 sm:px-6 lg:px-7" id="kelola-kategori-root">
       <!-- Header Halaman -->
       <div class="space-y-1">
         <h1 class="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">Kelola Inventaris</h1>
@@ -568,7 +549,7 @@ export function renderKelolaKategoriContent(state = {}) {
             <button
               type="button"
               data-action="open-tambah-dialog"
-              class="${buttonClass({ variant: 'default', size: 'default', className: 'h-11 rounded-full px-5 gap-1.5' })}"
+              class="${buttonClass({ variant: 'default', size: 'default', className: 'h-11 rounded-full px-5 gap-1.5 button-hover-soft-primary' })}"
             >
               ${renderIcon('Plus', 'h-4 w-4')}
               <span>Tambah Kategori</span>
@@ -1037,10 +1018,6 @@ function handleSearchInput(e) {
   } else if (e.target.id === 'input-kategori-nama') {
     const val = e.target.value;
     pageState.inputNama = val;
-    const counter = currentContainer?.querySelector('#char-counter');
-    if (counter) {
-      counter.textContent = `${val.length}/${MAKS_PANJANG_KATEGORI}`;
-    }
     if (pageState.inputError) {
       pageState.inputError = null;
       const errEl = currentContainer?.querySelector('#kategori-error-msg');

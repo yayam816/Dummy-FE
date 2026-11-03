@@ -192,7 +192,7 @@ export function getPageTitle(hash = '') {
   if (/^#\/inventaris\/[^/]+\/ajukan$/.test(clean)) return { title: 'Ajukan Peminjaman', icon: 'HandCoins' };
   if (/^#\/inventaris\/[^/]+$/.test(clean)) return { title: 'Inventaris', icon: 'Archive' };
   if (clean === '#/kelola/inventaris/tambah') return { title: 'Tambah Barang', icon: 'Sliders' };
-  if (/^#\/kelola\/inventaris\/[^/]+\/ubah$/.test(clean)) return { title: 'Ubah Barang', icon: 'Sliders' };
+  if (/^#\/kelola\/inventaris\/[^/]+\/ubah$/.test(clean)) return { title: 'Kelola Inventaris', icon: 'Sliders' };
   if (clean === '#/kelola/inventaris') return { title: 'Kelola Inventaris', icon: 'Sliders' };
   if (clean === '#/kelola/kategori') return { title: 'Kelola Kategori', icon: 'FolderTree' };
   if (clean === '#/kelola/peminjaman') return { title: 'Kelola Peminjaman', icon: 'Sliders' };
@@ -203,6 +203,7 @@ export function getPageTitle(hash = '') {
   if (clean === '#/pengajuan-saya/pengembalian') return { title: 'Pengajuan Saya', icon: 'HandCoins' };
   if (clean === '#/pengajuan-pj') return { title: 'Pengajuan PJ', icon: 'UserRoundPlus' };
   if (clean === '#/tata-tertib') return { title: 'Tata Tertib', icon: 'FileText' };
+  if (clean === '#/profil') return { title: 'Profil Pengguna', icon: 'CircleUserRound' };
   if (clean === '#/login') return { title: 'Masuk', icon: null };
   return { title: 'PinjemDulu', icon: null };
 }
