@@ -17,6 +17,7 @@ let clickHandler = null;
 let inputHandler = null;
 let toastMessage = '';
 let toastType = 'success';
+let toastTimeout = null;
 let modalRow = null;
 let feedbackModal = null;
 let rejectionReason = '';
@@ -88,7 +89,7 @@ function renderModal() {
     const actionClass = approve
       ? 'bg-emerald-600 text-white hover:bg-emerald-700'
       : 'bg-rose-600 text-white hover:bg-rose-700';
-    const gif = approve ? 'assets/animations/modal-approve.gif' : 'assets/animations/modal-cancel.gif';
+    const gif = approve ? 'assets/animations/modal-approve.gif' : 'assets/animations/modal-reject.gif';
     const action = approve ? 'confirm-approve' : 'confirm-reject';
     return `<div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4" data-modal-backdrop>
       <section role="dialog" aria-modal="true" aria-labelledby="request-pj-confirm-title" class="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
@@ -138,7 +139,38 @@ function renderModal() {
   const attachment = row.lampiran?.nama || row.lampiran?.name || '';
   const statusClass = status.label === 'Menunggu' ? 'bg-amber-50 text-amber-600' : status.label === 'Disetujui' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600';
   const rejectionReasonText = row.alasanPenolakan || row.alasan_penolakan || '';
-  return `<div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4 sm:p-6" data-modal-backdrop><section role="dialog" aria-modal="true" aria-labelledby="request-pj-detail-title" class="w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-6 sm:p-8 shadow-2xl"><div class="mb-6 flex items-center justify-between gap-4"><h2 id="request-pj-detail-title" class="text-2xl font-semibold tracking-tight text-slate-900">Informasi Pemohon</h2><button type="button" data-action="close-modal" aria-label="Tutup detail" class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700">${renderIcon('X', 'h-5 w-5')}</button></div><div class="space-y-5 text-sm"><div><p class="mb-2 font-semibold text-slate-900">Nama Pemohon</p><div class="flex min-h-[54px] items-center justify-between gap-3 rounded-2xl border border-slate-100 bg-white px-5 py-3"><span class="font-medium text-slate-800">${escapeHtml(personName(row))}</span><span class="flex shrink-0 items-center gap-2 text-sm font-medium text-slate-600"><span class="flex h-5 w-5 items-center justify-center rounded-full bg-amber-100 text-[9px] font-bold text-amber-700">${escapeHtml(initials(organization).slice(0, 1))}</span>${escapeHtml(organization)}</span></div></div><div><p class="mb-2 font-semibold text-slate-900">NIM</p><div class="rounded-2xl border border-slate-100 bg-white px-5 py-4 font-medium text-slate-800">${escapeHtml(nim)}</div></div><div><p class="mb-2 font-semibold text-slate-900">Tanggal Pengajuan</p><div class="px-5 py-2 font-medium text-slate-800">${escapeHtml(dateLabel(row.tanggalPengajuan || row.createdAt))}</div></div><div><p class="mb-3 font-semibold text-slate-900">Status</p><span class="inline-flex rounded-xl px-3 py-2 text-sm font-medium ${statusClass}">${escapeHtml(status.label)}</span></div>${status.label === 'Ditolak' ? `<div><p class="mb-2 font-semibold text-slate-900">Alasan Penolakan</p><div class="rounded-2xl border border-slate-100 bg-white px-5 py-4 font-medium text-slate-700">${escapeHtml(rejectionReasonText || '—')}</div></div>` : ''}<div><p class="mb-2 font-semibold text-slate-900">Lampiran Surat</p><div class="flex min-h-[62px] items-center gap-3 overflow-hidden rounded-2xl border border-slate-100 bg-white"><span class="flex h-14 w-16 shrink-0 items-center justify-center bg-slate-50 text-slate-400">${renderIcon('FileImage', 'h-5 w-5')}</span><span class="truncate text-base text-slate-800">${escapeHtml(attachment || 'Tidak ada lampiran surat')}</span></div></div></div><div class="mt-6 flex justify-end"><button type="button" data-action="close-modal" class="rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:brightness-110">Tutup</button></div></section></div>`;
+  return `
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 backdrop-blur-sm p-4" data-modal-backdrop>
+      <section role="dialog" aria-modal="true" aria-labelledby="request-pj-detail-title" class="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-2xl bg-white p-6 shadow-xl sm:p-8">
+        <div class="flex items-start justify-between gap-4">
+          <h2 id="request-pj-detail-title" class="text-2xl font-semibold tracking-tight text-slate-900">Informasi Pemohon</h2>
+          <button type="button" data-action="close-modal" aria-label="Tutup detail" class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700">${renderIcon('X', 'h-5 w-5')}</button>
+        </div>
+
+        <div class="mt-6 space-y-6 text-sm">
+          <div class="flex items-center justify-between gap-6">
+            <p class="text-base font-semibold text-slate-900">Nama Pemohon</p>
+            <div class="text-right">
+              <p class="text-base font-medium text-slate-800">${escapeHtml(personName(row))}</p>
+              <p class="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-slate-600"><span class="inline-flex h-4 w-4 items-center justify-center rounded-full bg-amber-100 text-[9px] font-bold text-amber-700">${escapeHtml(initials(organization).slice(0, 1))}</span>${escapeHtml(organization)}</p>
+            </div>
+          </div>
+          <div class="flex items-center justify-between gap-6"><p class="text-base font-semibold text-slate-900">NIM</p><p class="break-all text-right text-base font-medium text-slate-800">${escapeHtml(nim)}</p></div>
+          <div class="flex items-center justify-between gap-6"><p class="text-base font-semibold text-slate-900">Tanggal Pengajuan</p><p class="text-right text-base font-medium text-slate-800">${escapeHtml(dateLabel(row.tanggalPengajuan || row.createdAt))}</p></div>
+          <div class="flex items-center justify-between gap-6"><p class="text-base font-semibold text-slate-900">Status</p><span class="inline-flex rounded-xl px-4 py-1.5 text-xs font-medium ${statusClass}">${escapeHtml(status.label)}</span></div>
+          ${status.label === 'Ditolak' ? `<div><p class="mb-2 text-base font-semibold text-slate-900">Alasan Penolakan</p><div class="rounded-2xl border border-slate-100 bg-white px-5 py-4 text-base font-medium text-slate-700 whitespace-pre-line">${escapeHtml(rejectionReasonText || '—')}</div></div>` : ''}
+          <div>
+            <p class="mb-2 text-base font-semibold text-slate-900">Lampiran Surat</p>
+            <div class="flex min-h-[62px] items-center gap-3 overflow-hidden rounded-2xl border border-slate-100 bg-white px-5 py-4">
+              <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-50 text-slate-400">${renderIcon('FileImage', 'h-5 w-5')}</span>
+              <span class="break-words text-base font-medium text-slate-800">${escapeHtml(attachment || 'Tidak ada lampiran surat')}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6 flex justify-end"><button type="button" data-action="close-modal" class="rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:brightness-110">Tutup</button></div>
+      </section>
+    </div>`;
 }
 function renderContent() {
   const count = visibleRows().length;
@@ -179,6 +211,8 @@ export async function mount(root) {
   searchTerm = '';
   currentPage = 1;
   toastMessage = '';
+  if (toastTimeout) clearTimeout(toastTimeout);
+  toastTimeout = null;
   modalRow = null;
   feedbackModal = null;
   rejectionReason = '';
@@ -212,7 +246,7 @@ export async function mount(root) {
       refresh(); return;
     }
     if (action === 'back-confirm') {
-      if (feedbackModal?.stage === 'approve-confirm') feedbackModal = null;
+      if (feedbackModal?.stage === 'approve-confirm') { feedbackModal = null; modalRow = null; }
       else if (feedbackModal?.stage === 'reject-confirm') feedbackModal = { stage: 'reject-form', requestId: feedbackModal.requestId };
       refresh(); return;
     }
@@ -237,26 +271,54 @@ export async function mount(root) {
         await updateMockRequestPjStatus(requestId, isApprove ? STATUS_REQUEST_PJ.DISETUJUI : STATUS_REQUEST_PJ.DITOLAK, isApprove ? null : rejectionReason.trim());
         rows = await getRequestPj();
         modalRow = null;
-        // Persetujuan menampilkan modal hasil agar tombol Tutup dapat digunakan.
-        // Penolakan langsung kembali ke daftar setelah status berhasil diperbarui.
-        feedbackModal = isApprove ? {
-          stage: 'result',
-          type: 'approve',
-          title: 'Pengajuan PJ Berhasil Disetujui!',
-          message: 'Pemohon kini resmi menjadi Penanggung Jawab inventaris.',
-        } : null;
-        if (!isApprove) modalRow = null;
+        // Setelah status diperbarui, tampilkan notifikasi pada daftar selama 3 detik.
+        feedbackModal = null;
+        modalRow = null;
         rejectionReason = '';
         rejectionValidationCount = 0;
-        toastType = 'success'; toastMessage = '';
+        toastType = 'success';
+        toastMessage = isApprove ? 'Pengajuan PJ berhasil disetujui.' : 'Pengajuan PJ berhasil ditolak.';
       } catch (error) {
         feedbackModal = null;
-        toastType = 'error'; toastMessage = error?.message || 'Status pengajuan gagal diperbarui.';
+        toastType = 'error';
+        toastMessage = error?.message || 'Status pengajuan gagal diperbarui.';
       }
+      if (toastTimeout) clearTimeout(toastTimeout);
       refresh();
+      if (toastMessage) {
+        toastTimeout = setTimeout(() => {
+          toastMessage = '';
+          toastTimeout = null;
+          refresh();
+        }, 3000);
+      }
     }
   };
   inputHandler = (event) => {
+    if (event.target.id === 'rejection-reason') {
+      rejectionReason = event.target.value;
+      if (rejectionValidationCount > 0) {
+        const textarea = event.target;
+        const error = rootElement.querySelector('#rejection-reason-error');
+        if (rejectionReason.trim()) {
+          error?.remove();
+          textarea.classList.remove('border-red-300');
+          textarea.classList.add('border-slate-200');
+        } else {
+          textarea.classList.remove('border-slate-200');
+          textarea.classList.add('border-red-300');
+          if (!error) {
+            const errorElement = document.createElement('div');
+            errorElement.id = 'rejection-reason-error';
+            errorElement.setAttribute('role', 'alert');
+            errorElement.className = 'rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-700 validation-blink';
+            errorElement.textContent = 'Alasan penolakan wajib diisi.';
+            textarea.insertAdjacentElement('afterend', errorElement);
+          }
+        }
+      }
+      return;
+    }
     if (event.target.id === 'rejection-reason') { rejectionReason = event.target.value; return; }
     if (event.target.id !== 'search-pemohon-pj') return;
     searchTerm = event.target.value;
@@ -272,5 +334,7 @@ export async function mount(root) {
 export function unmount() {
   if (rootElement && clickHandler) rootElement.removeEventListener('click', clickHandler);
   if (rootElement && inputHandler) rootElement.removeEventListener('input', inputHandler);
+  if (toastTimeout) clearTimeout(toastTimeout);
+  toastTimeout = null;
   rootElement = null; clickHandler = null; inputHandler = null; rows = []; modalRow = null;
 }
